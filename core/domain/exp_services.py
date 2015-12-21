@@ -237,8 +237,7 @@ def get_multiple_explorations_by_id(exp_ids, strict=True):
     return result
 
 
-def get_displayable_exp_summary_dicts_matching_ids(
-        exploration_ids, user_id):
+def get_displayable_exp_summary_dicts_matching_ids(exploration_ids):
     """Given a list of exploration ids, filters the list for
     explorations that are currently non-private and not deleted,
     and returns a list of dicts of the corresponding exploration summaries.
@@ -249,7 +248,7 @@ def get_displayable_exp_summary_dicts_matching_ids(
 
     for exploration_summary in exploration_summaries:
         if exploration_summary and exploration_summary.status != (
-            rights_manager.ACTIVITY_STATUS_PRIVATE):
+                rights_manager.ACTIVITY_STATUS_PRIVATE):
             displayable_exploration_summaries.append({
                 'id': exploration_summary.id,
                 'status': exploration_summary.status,
@@ -258,8 +257,6 @@ def get_displayable_exp_summary_dicts_matching_ids(
                     utils.get_time_in_millisecs(
                         exploration_summary.exploration_model_last_updated
                     )),
-                'is_editable': (
-                    is_exp_summary_editable(exploration_summary, user_id)),
                 'language_code': exploration_summary.language_code,
                 'category': exploration_summary.category,
                 'ratings': exploration_summary.ratings,
@@ -1309,7 +1306,6 @@ def _get_search_rank(exp_id):
     # negative ranks are disallowed in the Search API.
     _DEFAULT_RANK = 20
 
-    exploration = get_exploration_by_id(exp_id)
     rights = rights_manager.get_exploration_rights(exp_id)
     summary = get_exploration_summary_by_id(exp_id)
     rank = _DEFAULT_RANK + (
@@ -1323,19 +1319,6 @@ def _get_search_rank(exp_id):
             rank += (
                 summary.ratings[rating_value] *
                 RATING_WEIGHTINGS[rating_value])
-
-    last_human_update_ms = _get_last_updated_by_human_ms(exp_id)
-
-    _TIME_NOW_MS = utils.get_current_time_in_millisecs()
-    _MS_IN_ONE_DAY = 24 * 60 * 60 * 1000
-    time_delta_days = int(
-        (_TIME_NOW_MS - last_human_update_ms) / _MS_IN_ONE_DAY)
-    if time_delta_days == 0:
-        rank += 80
-    elif time_delta_days == 1:
-        rank += 50
-    elif 2 <= time_delta_days <= 7:
-        rank += 35
 
     # Ranks must be non-negative.
     return max(rank, 0)
@@ -1414,7 +1397,7 @@ def search_explorations(query, limit, sort=None, cursor=None):
           If there are more documents that match the query than 'limit', this
           function will return a cursor to get the next page.
 
-    returns: a tuple:
+    returns: a 2-tuple consisting of:
       - a list of exploration ids that match the query.
       - a cursor if there are more matching explorations to fetch, None
           otherwise. If a cursor is returned, it will be a web-safe string that
@@ -1422,3 +1405,60 @@ def search_explorations(query, limit, sort=None, cursor=None):
     """
     return search_services.search(
         query, SEARCH_INDEX_EXPLORATIONS, cursor, limit, sort, ids_only=True)
+
+
+def get_gallery_category_groupings(language_codes):
+    """Returns a list of groups in the gallery. Each group has a header and
+    a list of dicts representing activity summaries.
+    """
+    _GALLERY_CATEGORY_GROUPINGS = [{
+        'header': 'Computation & Programming',
+        'search_categories': ['Computing', 'Programming'],
+    }, {
+        'header': 'Mathematics & Statistics',
+        'search_categories': ['Mathematics', 'Statistics'],
+    }, {
+        'header': 'Biology, Chemistry & Medicine',
+        'search_categories': ['Biology', 'Chemistry', 'Medicine'],
+    }, {
+        'header': 'Physics, Astronomy & Engineering',
+        'search_categories': ['Physics', 'Astronomy', 'Engineering'],
+    }, {
+        'header': 'Languages & Reading',
+        'search_categories': ['Languages', 'Reading'],
+    }, {
+        'header': 'Environment & Geography',
+        'search_categories': ['Environment', 'Geography'],
+    }, {
+        'header': 'Business, Economics, Government & Law',
+        'search_categories': ['Business', 'Economics', 'Government', 'Law'],
+    }]
+
+    language_codes_suffix = ''
+    if language_codes:
+        language_codes_suffix = ' language_code=("%s")' % (
+            '" OR "'.join(language_codes))
+
+    def _generate_query(categories):
+        # This assumes that 'categories' is non-empty.
+        return 'category=("%s")%s' % (
+            '" OR "'.join(categories), language_codes_suffix)
+
+    results = []
+    for gallery_group in _GALLERY_CATEGORY_GROUPINGS:
+        # TODO(sll): Extend this to include collections.
+        exp_ids = search_explorations(
+            _generate_query(gallery_group['search_categories']), 10)[0]
+
+        if not exp_ids:
+            continue
+
+        summary_dicts = get_displayable_exp_summary_dicts_matching_ids(
+            exp_ids)
+        results.append({
+            'header': gallery_group['header'],
+            'categories': gallery_group['search_categories'],
+            'activity_summary_dicts': summary_dicts,
+        })
+
+    return results

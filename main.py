@@ -180,6 +180,10 @@ urls = [
     get_redirect_route(
         r'%s' % feconf.GALLERY_DATA_URL, galleries.GalleryHandler,
         'gallery_handler'),
+    get_redirect_route(
+        r'/default_gallery_categories',
+        galleries.DefaultGalleryCategoriesHandler,
+        'default_gallery_categories'),
 
     get_redirect_route(
         r'%s' % feconf.LEARN_GALLERY_URL, galleries.GalleryRedirectPage,

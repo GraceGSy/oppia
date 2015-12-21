@@ -22,7 +22,6 @@ import os
 import StringIO
 import zipfile
 
-from core.domain import event_services
 from core.domain import exp_domain
 from core.domain import exp_jobs_one_off
 from core.domain import exp_services
@@ -1997,8 +1996,7 @@ class ExplorationSearchTests(ExplorationServicesUnitTests):
     def test_get_search_rank(self):
         self.save_new_valid_exploration(self.EXP_ID, self.OWNER_ID)
 
-        # The search rank has a 'last updated' bonus of 80.
-        _BASE_SEARCH_RANK = 20 + 80
+        _BASE_SEARCH_RANK = 20
 
         self.assertEqual(
             exp_services._get_search_rank(self.EXP_ID), _BASE_SEARCH_RANK)
@@ -2195,7 +2193,7 @@ class ExplorationSummaryGetTests(ExplorationServicesUnitTests):
 
         displayable_summaries = (
             exp_services.get_displayable_exp_summary_dicts_matching_ids(
-                [self.EXP_ID_1, self.EXP_ID_2, self.EXP_ID_3], self.ALBERT_ID))
+                [self.EXP_ID_1, self.EXP_ID_2, self.EXP_ID_3]))
 
         self.assertEqual(len(displayable_summaries), 1)
         self.assertEqual(
@@ -2205,8 +2203,6 @@ class ExplorationSummaryGetTests(ExplorationServicesUnitTests):
             rights_manager.ACTIVITY_STATUS_PUBLIC)
         self.assertEqual(
             displayable_summaries[0]['community_owned'], False)
-        self.assertEqual(
-            displayable_summaries[0]['is_editable'], True)
         self.assertEqual(
             displayable_summaries[0]['language_code'],
             feconf.DEFAULT_LANGUAGE_CODE)

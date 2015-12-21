@@ -21,7 +21,6 @@ from core.controllers import base
 from core.platform import models
 email_services = models.Registry.import_email_services()
 (job_models,) = models.Registry.import_models([models.NAMES.job])
-import feconf
 import utils
 
 from pipeline import pipeline

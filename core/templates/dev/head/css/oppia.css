@@ -769,18 +769,16 @@ textarea {
   white-space: normal;
 }
 .btn.oppia-navbar-add-exploration-button {
-  background-color: rgba(5, 190, 178, 0.9);
+  background-color: rgba(0, 104, 94, 0.9);
   color: rgba(255,255,255,0.9);
+  font-family: "Capriola", "Roboto", Arial, sans-serif;
   font-size: 16px;
   margin-right: 5px;
+  text-transform: uppercase;
 }
 .btn.oppia-navbar-add-exploration-button:hover {
-  background-color: rgba(5, 190, 178, 1);
+  background-color: rgba(0, 104, 94, 1.0);
   color: rgba(255,255,255,1);
-}
-.oppia-navbar-add-exploration-button-plus {
-  font-weight: bold;
-  margin-right: 5px;
 }
 
 @media (max-width: 1050px) {
@@ -1862,21 +1860,6 @@ ul.oppia-dashboard-tiles {
 }
 .oppia-gallery-modal .modal-dialog {
   margin-top: 50px;
-}
-
-.oppia-gallery-modal-video {
-  padding-bottom: 56.25%;
-  position: relative;
-  width: 100%;
-}
-.oppia-gallery-modal-video > iframe {
-  bottom: 0;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 100%;
 }
 
 .oppia-modal-close {

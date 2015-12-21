@@ -87,12 +87,10 @@ class ProfileHandler(base.BaseHandler):
         if user_contributions:
             created_exploration_summary_dicts = (
                 exp_services.get_displayable_exp_summary_dicts_matching_ids(
-                    user_contributions.created_exploration_ids,
-                    user_settings.user_id))
+                    user_contributions.created_exploration_ids))
             edited_exploration_summary_dicts = (
                 exp_services.get_displayable_exp_summary_dicts_matching_ids(
-                    user_contributions.edited_exploration_ids,
-                    user_settings.user_id))
+                    user_contributions.edited_exploration_ids))
 
         self.values.update({
             'user_bio': user_settings.user_bio,
